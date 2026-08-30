@@ -139,6 +139,22 @@ build () {   # $1 layout  $2 outfile  $3 orientation  $4 rail offset
   python3 engine/pdf.py "html/$SLUG-$1.html" "$OUT/$2" \
           "$(header_tpl "$4" "$5" "$RUNHEAD" "$NUM")" \
           "$(footer_tpl "$4" "$5")" "$3" "$MT" "$MB" "$6" "$7"
+  # Assert on the artifact, not on the source. An rgba() fill, an SVG opacity
+  # or a `transparent` gradient stop all make Chrome emit a PDF soft mask, and
+  # a page carrying one is rasterised rather than drawn by most tablet note
+  # apps. Checking the PDF catches every cause, including ones not thought of.
+  python3 - "$OUT/$2" <<'ALPHA'
+import sys
+d = open(sys.argv[1], "rb").read()
+n, g = d.count(b"/SMask"), d.count(b"/Group")
+if n or g:
+    sys.exit(f"\n  {sys.argv[1]}: {n} soft masks, {g} transparency groups.\n"
+             "  Something in the styling uses alpha: an rgba() fill, an SVG\n"
+             "  opacity, a `transparent` gradient stop, or an emoji (a colour\n"
+             "  bitmap glyph). Pages carrying these get rasterised by tablet\n"
+             "  note apps instead of drawn as vectors.\n"
+             "  See the comment beside --wash-cool in engine/theme.css.")
+ALPHA
   printf '  %-52s %s\n' "$OUT/$2" "$(du -h "$OUT/$2" | cut -f1)"
 }
 

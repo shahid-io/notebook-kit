@@ -52,11 +52,17 @@
   /* The same ten colours as washes. A block, a table head and a code plate
      are fields of colour, not outlines: this is what makes a spread read as
      coloured rather than as ink with coloured hairlines. */
-  --wash-cool:rgba(224,225,221,.55);   /* #e0e1dd */
-  --wash-mint:rgba(216,226,220,.62);   /* #d8e2dc */
-  --wash-pink:rgba(255,202,212,.34);   /* #ffcad4 */
-  --wash-peach:rgba(255,229,217,.62);  /* #ffe5d9 */
-  --wash-zebra:rgba(224,225,221,.34);  /* #e0e1dd */
+  /* Washes, pre-blended over white paper rather than written as rgba().
+     An alpha fill makes Chrome emit a PDF transparency group and a soft mask,
+     and a page carrying soft masks is rasterised rather than drawn by most
+     tablet note apps and several viewers, which is what "the PDF looks soft"
+     actually is. These are the identical colours, composited at build time.
+     Recompute with: round(c*a + 255*(1-a)) per channel. */
+  --wash-cool:#eeeeec;    /* was #e0e1dd @ .55 */
+  --wash-mint:#e7ede9;    /* was #d8e2dc @ .62 */
+  --wash-pink:#ffedf0;    /* was #ffcad4 @ .34 */
+  --wash-peach:#ffefe7;   /* was #ffe5d9 @ .62 */
+  --wash-zebra:#f4f5f3;   /* was #e0e1dd @ .34 */
 
   --serif:"Charter","Iowan Old Style","Palatino Linotype","Georgia",serif;
   --hand:"Caveat","Marker Felt","Bradley Hand",cursive;
@@ -101,16 +107,16 @@ em{color:var(--ink-2);}
 a{color:var(--blue);text-decoration:none;border-bottom:.5px solid var(--pencil);}
 
 mark{
-  background:linear-gradient(180deg,transparent 9%,var(--hi) 9%,var(--hi) 99%,transparent 99%);
+  background:linear-gradient(180deg,var(--paper) 9%,var(--hi) 9%,var(--hi) 99%,var(--paper) 99%);
   padding:0 2.5px;
   /* uneven corners so a mark reads as a felt-tip swipe, not a filled box */
   border-radius:3px 8px 4px 9px;
   -webkit-print-color-adjust:exact;
   print-color-adjust:exact;
 }
-mark.r{border-radius:8px 3px 9px 4px;background:linear-gradient(180deg,transparent 9%,var(--hi-r) 9%,var(--hi-r) 99%,transparent 99%);}
-mark.g{border-radius:8px 3px 9px 4px;background:linear-gradient(180deg,transparent 9%,var(--hi-g) 9%,var(--hi-g) 99%,transparent 99%);}
-mark.b{border-radius:8px 3px 9px 4px;background:linear-gradient(180deg,transparent 9%,var(--hi-b) 9%,var(--hi-b) 99%,transparent 99%);}
+mark.r{border-radius:8px 3px 9px 4px;background:linear-gradient(180deg,var(--paper) 9%,var(--hi-r) 9%,var(--hi-r) 99%,var(--paper) 99%);}
+mark.g{border-radius:8px 3px 9px 4px;background:linear-gradient(180deg,var(--paper) 9%,var(--hi-g) 9%,var(--hi-g) 99%,var(--paper) 99%);}
+mark.b{border-radius:8px 3px 9px 4px;background:linear-gradient(180deg,var(--paper) 9%,var(--hi-b) 9%,var(--hi-b) 99%,var(--paper) 99%);}
 
 /* Pen marks. One hand-authored curve per mark, stretched to the width of
    whatever it wraps (preserveAspectRatio:none), drawn over the text rather
@@ -567,7 +573,7 @@ table th:first-child,table td:first-child{padding-left:8px;}
 .pad{
   position:relative;
   height:214mm;
-  background-image:radial-gradient(var(--grid) .55px,transparent .55px);
+  background-image:radial-gradient(var(--grid) .55px,var(--paper) .55px);
   background-size:5mm 5mm;
   background-position:2.5mm 2.5mm;
 }
@@ -735,7 +741,7 @@ table th:first-child,table td:first-child{padding-left:8px;}
 .rail .dots{
   position:absolute;
   top:12mm;left:6mm;right:4mm;bottom:4mm;
-  background-image:radial-gradient(var(--grid) .55px,transparent .55px);
+  background-image:radial-gradient(var(--grid) .55px,var(--paper) .55px);
   background-size:5mm 5mm;
 }
 

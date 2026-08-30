@@ -28,6 +28,27 @@ ASYMMETRIC = {("((", "))"): "pen circle", ("[[", "]]"): "pen box"}
 # Past about five words it flattens into a lozenge and stops reading as a pen.
 MAX_PEN_WORDS = 5
 
+# Characters the figure inker knows how to draw. Anything else in the symbol
+# category is either a fallback-font glyph or an emoji, and an emoji is a
+# colour bitmap: Chrome emits it as an image plus an alpha mask, which makes
+# the whole page rasterise in tablet note apps. It is also banned by house
+# style. Either way it must not reach a page.
+FIGURE_GLYPHS = set(build.WIRE + build.ARROW + build.FILL) | set(build.VERDICT)
+
+
+def bad_glyphs(text):
+    """Emoji and stray symbols, with their code points."""
+    import unicodedata
+    out = []
+    for ch in text:
+        if ord(ch) < 0x2000 or ch in FIGURE_GLYPHS:
+            continue
+        if ord(ch) >= 0x1F000 or ch == "\ufe0f" or (
+                unicodedata.category(ch) == "So" and 0x2600 <= ord(ch) <= 0x27BF):
+            out.append(ch)
+    return out
+
+
 # Inline marks never run inside a fence. In a code fence that is usually
 # harmless (`x == y`, `i++`, `__init__`); in an ASCII figure it is always a
 # marker the author meant to be a highlight.
@@ -161,6 +182,13 @@ def lint(path):
         para.append(ln.strip())
 
     flush_para()
+
+    for i, ln in enumerate(lines, 1):
+        for ch in bad_glyphs(ln):
+            rep.error(i, f"emoji or unsupported symbol {ch!r} (U+{ord(ch):04X}). "
+                         f"House style bans emoji, and a colour-bitmap glyph "
+                         f"forces Chrome to rasterise the page. Use a figure "
+                         f"glyph or plain text.")
 
     if fence is not None:
         rep.error(fence[0], "code fence opened here and never closed")

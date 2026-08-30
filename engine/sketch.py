@@ -25,7 +25,27 @@ PALETTE = {
     "pink":   "#ffcad4",
     "peach":  "#ffe5d9",
     "mint":   "#d8e2dc",
+    "rule":   "#d8e2dc",     # same ink as --rule in theme.css
 }
+
+
+def solid(colour, alpha):
+    """`colour` composited over white paper, as an opaque hex.
+
+    Drawing a stroke at `opacity="0.55"` makes Chrome emit a PDF transparency
+    group and a soft mask. A page carrying soft masks gets rasterised instead
+    of drawn by most tablet note apps and several viewers, which is what "the
+    figures look soft" actually is. Every figure here sits on white paper, so
+    the blend can be done once, at build time, for free.
+    """
+    h = PALETTE.get(colour, colour).lstrip("#")
+    if len(h) != 6 or any(c not in "0123456789abcdefABCDEF" for c in h):
+        raise SystemExit(f"sketch.py: unknown colour {colour!r}. "
+                         f"Use a palette name ({', '.join(sorted(PALETTE))}) "
+                         f"or a #rrggbb value.")
+    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return "#%02x%02x%02x" % tuple(round(c * alpha + 255 * (1 - alpha))
+                                   for c in (r, g, b))
 
 
 # A figure is drawn in a 700-wide viewBox and then scaled into a ~130mm column,
@@ -56,14 +76,21 @@ def _bow(x1, y1, x2, y2, rough, rnd):
     return f"M{ax:.1f} {ay:.1f}C{c1x:.1f} {c1y:.1f} {c2x:.1f} {c2y:.1f} {bx:.1f} {by:.1f}"
 
 
+# Pass weights, lightest first: the faint stroke is laid down and the strong
+# one drawn over it, so the doubled pen line reads the same as it did when
+# these were opacity values.
+PASS_ALPHA = (0.55, 0.9)
+
+
 def line(x1, y1, x2, y2, colour="ink", width=1.5, rough=1.5, passes=2):
     rnd = _rng("line", x1, y1, x2, y2)
+    order = PASS_ALPHA[-passes:] if passes <= len(PASS_ALPHA) else PASS_ALPHA
     return "".join(
         f'<path d="{_bow(x1, y1, x2, y2, rough, rnd)}" fill="none" '
-        f'stroke="{PALETTE.get(colour, colour)}" '
+        f'stroke="{solid(colour, a)}" '
         f'stroke-width="{width * STROKE_SCALE:.2f}" '
-        f'stroke-linecap="round" opacity="{0.9 if i == 0 else 0.55}"/>'
-        for i in range(passes))
+        f'stroke-linecap="round"/>'
+        for a in order)
 
 
 def rect(x, y, w, h, colour="ink", width=1.5, rough=1.6, fill=None):
@@ -71,8 +98,8 @@ def rect(x, y, w, h, colour="ink", width=1.5, rough=1.6, fill=None):
     rnd = _rng("rect", x, y, w, h)
     out = []
     if fill:
-        out.append(f'<path d="M{x} {y}h{w}v{h}h{-w}z" fill="{PALETTE.get(fill, fill)}" '
-                   f'opacity="0.5"/>')
+        out.append(f'<path d="M{x} {y}h{w}v{h}h{-w}z" '
+                   f'fill="{solid(fill, 0.5)}"/>')
     o = lambda: rnd.uniform(-rough, rough)
     pts = [(x + o(), y + o()), (x + w + o(), y + o()),
            (x + w + o(), y + h + o()), (x + o(), y + h + o())]
@@ -105,21 +132,21 @@ def circle(cx, cy, r, colour="warm", width=1.6, ry=None):
         pts.append((cx + (rx + j) * math.cos(t),
                     cy + (ry + j) * math.sin(t)))
     d = "M" + " L".join(f"{x:.1f} {y:.1f}" for x, y in pts)
-    return (f'<path d="{d}" fill="none" stroke="{PALETTE.get(colour, colour)}" '
+    return (f'<path d="{d}" fill="none" stroke="{solid(colour, 0.85)}" '
             f'stroke-width="{width * STROKE_SCALE:.2f}" '
-            f'stroke-linecap="round" opacity="0.85"/>')
+            f'stroke-linecap="round"/>')
 
 
 def highlight(x, y, w, colour="peach", height=13):
-    """One thick low-opacity swipe, uneven at the ends like a real marker."""
+    """One thick pale swipe, uneven at the ends like a real marker."""
     rnd = _rng("hl", x, y, w)
     y1 = y + rnd.uniform(-1, 1)
     y2 = y + rnd.uniform(-1.5, 1.5)
     return (f'<path d="M{x} {y1:.1f}C{x + w / 3} {y1 - 1.5:.1f} '
             f'{x + 2 * w / 3} {y2 + 1.5:.1f} {x + w} {y2:.1f}" fill="none" '
-            f'stroke="{PALETTE.get(colour, colour)}" '
+            f'stroke="{solid(colour, 0.75)}" '
             f'stroke-width="{height * STROKE_SCALE:.2f}" '
-            f'stroke-linecap="round" opacity="0.75"/>')
+            f'stroke-linecap="round"/>')
 
 
 def text(x, y, s, size=13, colour="ink", hand="hand2", anchor="start", rotate=0):

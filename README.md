@@ -316,6 +316,30 @@ recedes to `--wire`, flow arrowheads advance to `--arrow`, block-fill characters
 (bars, meters) take `--bar`, ALL-CAPS node labels take full ink, `✓` and `✗`
 carry the verdict, and everything after a `←` drops to pencil as a margin note.
 
+## No alpha, anywhere
+
+An `rgba()` fill, an SVG `opacity`, a `transparent` gradient stop or an emoji
+all make Chrome emit a PDF **soft mask** or **transparency group**. A page
+carrying one is rasterised rather than drawn as vectors by most tablet note
+apps and several viewers, which is what "the PDF looks soft" turns out to be.
+
+So every translucent thing in this design is composited at build time instead:
+
+| Was | Now |
+|---|---|
+| `--wash-*: rgba(r,g,b,a)` | The same colour pre-blended over white paper |
+| SVG `opacity="0.55"` | `sketch.solid(colour, 0.55)`, an opaque hex |
+| `linear-gradient(180deg,transparent 9%,...)` | `var(--paper)` in place of `transparent` |
+| An emoji in a figure | A glyph from the figure set, or plain text |
+
+Recompute a blend with `round(c * a + 255 * (1 - a))` per channel, or call
+`engine/sketch.solid()`.
+
+`build.sh` asserts on every PDF it produces and fails if a soft mask or a
+transparency group appears, so this cannot silently regress. `engine/lint.py`
+rejects emoji in book source for the same reason, and because house style bans
+them anyway.
+
 ## Layout notes
 
 Two Chrome print behaviours are worked around deliberately, both commented in
