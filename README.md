@@ -1,8 +1,5 @@
 # Study Notebooks
 
-MIT licensed. The two bundled fonts are not covered by it; both are SIL
-OFL 1.1 and free to redistribute. See `engine/fonts/NOTICE.md`.
-
 Printed study manuals, built from markdown into annotatable PDFs. One pipeline,
 one design, many books. A notebook is built around a single question, because
 one question worked properly teaches more than a survey does.
@@ -12,8 +9,10 @@ one question worked properly teaches more than a survey does.
 | XX | Example Book | `books/example.md` | The template. Every directive and mark, rendered |
 | 00 | Question Bank | `books/question-bank.md` | Generated once you have books to collect from |
 
-New here? Read **`GETTING-STARTED.md`**, then build `books/example.md` and read
-the PDF beside the source.
+New here? Read **`GETTING-STARTED.md`** to get a PDF out of it, then
+**`AUTHORING.md`** before you write your first book. The second one matters
+more: this repository is a typesetter, and the hard part is deciding what the
+book is about.
 
 ## Build
 
@@ -25,7 +24,7 @@ bash build.sh all                    # every book, every edition
 ```
 
 Arguments may name a book slug, an edition (`study`, `tablet`, `clean`), `all`,
-or one of each in either order. ==Only the Reading edition builds by default==:
+or one of each in either order. **Only the Reading edition builds by default**:
 Print and Tablet cost a third of the wall clock each, so name one when you want
 it. Requires Google Chrome and Python 3, no third-party packages.
 
@@ -137,7 +136,7 @@ Semaphore site's `doodle.tsx`, stretched to the wrapped text with
 so a wide span does not thin the line. Static SVG, no JavaScript, so it survives
 Chrome's print path.
 
-==Circle two to five words only.== One authored ellipse stretched across a whole
+**Circle two to five words only.** One authored ellipse stretched across a whole
 sentence flattens into a line through the text. The other three take any width.
 
 If a page carries more than three or four marks, it carries none.
@@ -166,14 +165,14 @@ The caption, set in the reader's hand.
 `highlight` and `text`. Every stroke is drawn two or three times from jittered
 endpoints with bowed control points, which is what makes a line read as pen
 rather than as a border. Randomness is seeded from each shape's own
-coordinates, so ==a rebuild is byte-identical==: a book that redrew itself every
+coordinates, so **a rebuild is byte-identical**: a book that redrew itself every
 build would be unreviewable.
 
 Coordinates are in a 700-wide viewBox and scale into the column, so type and
 stroke inside a figure shrink by about 5x. `TYPE_SCALE` and `STROKE_SCALE` in
 `sketch.py` lift both back to the weight of the page.
 
-++Draw the figures that carry the book, not all of them.++ A sketched figure
+**Draw the figures that carry the book, not all of them.** A sketched figure
 costs a few iterations to stop labels colliding, where an ASCII one costs
 nothing. Six to eight per book is the right budget.
 
@@ -182,7 +181,7 @@ Every `##` heading starts a new page and becomes a contents entry. Number them
 
 ### Glossing terms
 
-==A reader who has to open a search tab has been failed by the page.== Any word
+**A reader who has to open a search tab has been failed by the page.** Any word
 a reader might not know gets a gloss where it first appears:
 
 ```text
@@ -196,7 +195,7 @@ It renders as a quiet dictionary entry, deliberately lighter than the five
 annotation blocks: those are the argument, this is a footnote standing where the
 reader hit the word. Put `:::glossary` in an appendix and every term in the book
 is collected there alphabetically, each entry linking back to the page it was
-defined on. ++The definition is written once, at the point of need.++
+defined on. **The definition is written once, at the point of need.**
 
 Gloss a word when the prose does not already define it in the same breath. Not
 every noun; the page has a budget.
@@ -258,10 +257,10 @@ Prompts are grouped by source part and every one carries the notebook and
 section it came from, printed small beside its number, so a blank is never a
 dead end. The last part holds the written answers, one section per notebook.
 
-++Never edit `books/question-bank.md`.++ It is regenerated on every build. Edit
+**Never edit `books/question-bank.md`.** It is regenerated on every build. Edit
 the notebook the prompt came from.
 
-The point is that ==a question answered next to its own answer proves nothing==.
+The point is that **a question answered next to its own answer proves nothing**.
 Gathered here, the same prompts can be worked cold, which is the only condition
 an interview actually tests.
 

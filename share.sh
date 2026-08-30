@@ -22,7 +22,7 @@ cp engine/build.py engine/pdf.py engine/lint.py engine/questions.py \
 cp -R engine/fonts "$DEST/engine/fonts"
 cp books/example.md "$DEST/books/"
 cp books/figures/example.py "$DEST/books/figures/"
-cp README.md GETTING-STARTED.md share.sh "$DEST/"
+cp README.md GETTING-STARTED.md AUTHORING.md share.sh "$DEST/"
 
 # The registry with the personal books removed, and the README's table of
 # those books replaced by what the packaged copy actually contains.
@@ -54,6 +54,9 @@ r = r.replace(":::figure authz-layers", ":::figure request-path")
 (dest / "README.md").write_text(r)
 PY
 
+# Keep this verbatim MIT. GitHub's licence detection is exact-match, and an
+# appended note about the fonts makes the repo show as "Other". The font
+# caveat lives in the README and in engine/fonts/NOTICE.md instead.
 cat > "$DEST/LICENSE" <<LIC
 MIT License
 
@@ -76,9 +79,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-The two bundled fonts are not covered by this licence; both are SIL OFL 1.1.
-See engine/fonts/NOTICE.md.
 LIC
 
 cat > "$DEST/.gitignore" <<'GI'

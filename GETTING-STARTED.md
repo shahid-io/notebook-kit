@@ -82,6 +82,15 @@ rather than the traceback; it points at a line.
 | Pull a lecture transcript | `python3 engine/transcript.py "<url>" sources` |
 | Know what the linter checks | `README.md`, the Lint section |
 
+## Next: how a book actually gets written
+
+Everything above is mechanics. **`AUTHORING.md`** is the workflow: how to turn a
+lecture or a paper into a spine, why every book needs one question, what to add
+that the source did not say, and how these books are written with an AI
+assistant. Read it before your first book.
+
+The short version follows.
+
 ## Writing advice, which matters more than the tooling
 
 **One book, one question.** The books that work are built around a single
