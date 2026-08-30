@@ -1,0 +1,761 @@
+/* ============================================================================
+   Field-notebook press.
+
+   The look is a printed engineering manual rather than a web page: rules and
+   whitespace do the structural work, so there is not a single filled, rounded
+   callout box in the book. Three inks only (ink, ink-blue, oxide red) on white
+   stock.
+
+   Each typeface has one job, and the split is semantic:
+     Caveat        titles. The book's own hand.
+     Patrick Hand  anything addressed to the reader as a prompt. Their hand.
+     JetBrains     the machine: code, diagrams, labels, numerals, table heads.
+     Charter       the book's prose voice.
+   ========================================================================= */
+
+:root{
+  /* ====================================================================
+     Two ramps, and nothing outside them.
+
+     cool   #0d1b2a  #1b263b  #415a77  #778da9  #e0e1dd
+     warm   #9d8189  #f4acb7  #ffcad4  #ffe5d9  #d8e2dc
+
+     The cool ramp is the book: ink, structure, rule, stock. The warm ramp
+     is the reader's hand: four highlighters and the one warm ink reserved
+     for a warning. Nothing is decorative; a colour on a page is already
+     half-read before the words are.
+     ==================================================================== */
+
+  --paper:#FFFFFF;
+  --tint:#F2F3F1;          /* code stock, one step down from the page */
+  --ink:#0d1b2a;           /* body */
+  --ink-2:#1b263b;         /* secondary prose, figure base */
+  --pencil:#778da9;        /* labels, annotations, the reader's margin */
+  --rule:#d8e2dc;
+  --grid:#d8e2dc;
+  --blue:#415a77;          /* structure: section numbers, signal, do */
+  --red:#9d8189;           /* the one warm ink: traps and wrong answers */
+  --stock:#e0e1dd;
+
+  /* Four highlighters, semantic and never decorative, one meaning each. */
+  --hi:#ffe5d9;            /* peach  the sentence to carry away */
+  --hi-r:#f4acb7;          /* rose   the wrong answer, the danger */
+  --hi-g:#d8e2dc;          /* mint   the correct practice */
+  --hi-b:#ffcad4;          /* pink   a definition, a term of art */
+
+  /* Figure inks. A diagram is read by shape first, so structure recedes and
+     labels advance; nothing in a figure sits at full text contrast. */
+  --wire:#778da9;          /* box drawing: the structure of a figure */
+  --arrow:#415a77;          /* flow arrows: the movement in a figure */
+  --bar:#415a77;           /* block-fill characters: bars and meters */
+
+  /* The same ten colours as washes. A block, a table head and a code plate
+     are fields of colour, not outlines: this is what makes a spread read as
+     coloured rather than as ink with coloured hairlines. */
+  --wash-cool:rgba(224,225,221,.55);   /* #e0e1dd */
+  --wash-mint:rgba(216,226,220,.62);   /* #d8e2dc */
+  --wash-pink:rgba(255,202,212,.34);   /* #ffcad4 */
+  --wash-peach:rgba(255,229,217,.62);  /* #ffe5d9 */
+  --wash-zebra:rgba(224,225,221,.34);  /* #e0e1dd */
+
+  --serif:"Charter","Iowan Old Style","Palatino Linotype","Georgia",serif;
+  --hand:"Caveat","Marker Felt","Bradley Hand",cursive;
+  --hand2:"Patrick Hand","Chalkboard SE","Comic Sans MS",cursive;
+  --mono:"JetBrainsMonoNL Nerd Font Mono","JetBrains Mono","SF Mono","Menlo",monospace;
+}
+
+*{box-sizing:border-box;}
+
+html{background:#fff;}
+body{
+  font-family:var(--serif);
+  color:var(--ink);
+  font-size:10.4pt;
+  line-height:1.52;
+  margin:0;
+  background:transparent;
+  padding:0 var(--gutter-right) 0 20mm;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Chrome's printToPDF renders an element that break-inside:avoid pushed to a
+   new page ~0.207in above the content box, and lets a block at the foot of a
+   page spill about as far below it. Both strips sit inside the header/footer
+   margin bands, so those templates leave them unpainted and this backdrop,
+   which Chrome clips to exactly the expanded box, supplies the paper. Content
+   that lands there stays visible instead of disappearing under an opaque bar. */
+.paper{
+  position:fixed;
+  top:-30mm;left:-30mm;right:-30mm;bottom:-30mm;
+  background:var(--paper);
+  z-index:-1;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+
+/* ---------------------------------------------------------------- prose --- */
+
+p{margin:7px 0;}
+strong{font-weight:700;color:var(--ink-2);}
+em{color:var(--ink-2);}
+a{color:var(--blue);text-decoration:none;border-bottom:.5px solid var(--pencil);}
+
+mark{
+  background:linear-gradient(180deg,transparent 9%,var(--hi) 9%,var(--hi) 99%,transparent 99%);
+  padding:0 2.5px;
+  /* uneven corners so a mark reads as a felt-tip swipe, not a filled box */
+  border-radius:3px 8px 4px 9px;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+mark.r{border-radius:8px 3px 9px 4px;background:linear-gradient(180deg,transparent 9%,var(--hi-r) 9%,var(--hi-r) 99%,transparent 99%);}
+mark.g{border-radius:8px 3px 9px 4px;background:linear-gradient(180deg,transparent 9%,var(--hi-g) 9%,var(--hi-g) 99%,transparent 99%);}
+mark.b{border-radius:8px 3px 9px 4px;background:linear-gradient(180deg,transparent 9%,var(--hi-b) 9%,var(--hi-b) 99%,transparent 99%);}
+
+/* Pen marks. One hand-authored curve per mark, stretched to the width of
+   whatever it wraps (preserveAspectRatio:none), drawn over the text rather
+   than replacing anything. Geometry from the Binary Semaphore doodle set.
+   The stroke takes currentColor, so the colour is set on the span. */
+.mk-u,.mk-o,.mk-b,.mk-s{position:relative;display:inline-block;}
+.mk-u > svg,.mk-o > svg,.mk-b > svg,.mk-s > svg{
+  position:absolute;
+  overflow:visible;
+  pointer-events:none;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+
+/* underline: sits under the baseline, clear of descenders */
+.mk-u{color:var(--blue);}
+.mk-u > svg{left:0;bottom:-3.5px;width:100%;height:5px;}
+
+/* circle: a loop around the phrase, so it needs breathing room */
+.mk-o{color:var(--red);padding:.26em .5em .2em;}
+.mk-o > svg{inset:0;width:100%;height:100%;}
+
+/* box: a rough rectangle, tighter than the circle */
+.mk-b{color:var(--blue);padding:.18em .38em .14em;}
+.mk-b > svg{inset:0;width:100%;height:100%;}
+
+/* strike: through the middle, in pencil, for the thing that is not true */
+.mk-s{color:var(--pencil);}
+.mk-s > svg{left:0;top:50%;width:100%;height:4px;transform:translateY(-50%);}
+
+/* the marked text must sit above its own stroke */
+.mk-u,.mk-o,.mk-b,.mk-s{isolation:isolate;}
+
+ul,ol{margin:6px 0;padding-left:18px;}
+li{margin:3px 0;}
+li::marker{color:var(--blue);font-size:.92em;}
+ul ul,ol ol,ul ol,ol ul{margin:2px 0;}
+
+hr{border:none;border-top:.6px solid var(--rule);margin:18px 0;}
+
+blockquote{
+  margin:12px 0 12px 4px;
+  padding-left:12px;
+  border-left:2px solid var(--rule);
+  color:var(--ink-2);
+  font-style:italic;
+}
+
+/* ------------------------------------------------------------- headings --- */
+
+h1{
+  font-family:var(--hand);
+  font-size:38pt;
+  font-weight:600;
+  line-height:1.04;
+  color:var(--ink);
+  margin:0;
+}
+
+/* Section opener: numeral, a rule running out to the measure, title beneath.
+   Every section starts a page, so this reads as a chapter head. */
+.sec{
+  break-before:page;
+  page-break-before:always;
+  break-inside:avoid;
+  margin:0 0 4px;
+}
+.sec-top{display:flex;align-items:center;gap:11px;}
+/* The numeral is a filled chip, so a section opener carries colour at the
+   top of the page instead of a small blue numeral on white. */
+.sec-n{
+  font-family:var(--mono);
+  font-size:11.4pt;
+  font-weight:700;
+  line-height:1;
+  color:var(--paper);
+  background:var(--blue);
+  padding:4.5px 8px 4px;
+  letter-spacing:-.3px;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+.sec-rule{flex:1;border-top:1.6px solid var(--blue);}
+.sec h2{
+  font-family:var(--hand);
+  font-size:24pt;
+  font-weight:600;
+  line-height:1.12;
+  color:var(--ink-2);
+  margin:7px 0 0;
+}
+
+h3{
+  font-family:var(--serif);
+  font-size:12.2pt;
+  font-weight:700;
+  color:var(--blue);
+  margin:20px 0 4px;
+  padding-left:9px;
+  margin-left:-11.5px;
+  border-left:2.5px solid var(--blue);
+  break-after:avoid;
+  page-break-after:avoid;
+}
+h4{
+  font-family:var(--mono);
+  font-size:7.4pt;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--blue);
+  margin:17px 0 5px;
+  break-after:avoid;
+  page-break-after:avoid;
+}
+
+/* --------------------------------------------------------------- blocks --- */
+/* Rule with an inset legend, no fill and no frame. The mark and the rule
+   weight carry the type; only a trap earns red. */
+
+.blk{
+  border-top:1px solid var(--rule);
+  border-bottom:.5px solid var(--rule);
+  border-left:2.5px solid var(--rule);
+  background:var(--wash-cool);
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+  margin:19px 0 15px;
+  padding:0 11px 9px;
+  margin-left:-13.5px;
+  break-inside:avoid;
+  page-break-inside:avoid;
+}
+.blk > .lbl{
+  font-family:var(--mono);
+  font-size:7.2pt;
+  font-weight:700;
+  letter-spacing:1.9px;
+  text-transform:uppercase;
+  line-height:1;
+  color:var(--pencil);
+  display:inline-block;
+  margin:-4.6pt 0 8px;
+  padding-right:10px;
+  background-color:inherit;
+}
+.blk > .lbl .mk{
+  font-size:8.6pt;
+  letter-spacing:0;
+  margin-right:6px;
+  vertical-align:-.5px;
+}
+.blk p:first-of-type{margin-top:0;}
+.blk p:last-child,.blk ul:last-child,.blk ol:last-child,
+.blk pre:last-child{margin-bottom:0;}
+
+.blk .lead{font-weight:700;margin:0 0 5px;}
+
+.blk.ask{border-top-color:var(--pencil);border-left-color:var(--pencil);}
+.blk.ask > .lbl{color:var(--pencil);}
+.blk.ask .lead{font-weight:600;font-style:italic;color:var(--blue);}
+
+.blk.signal{border-top-color:var(--blue);border-left-color:var(--blue);}
+.blk.signal > .lbl{color:var(--blue);}
+
+.blk.do{border-top-color:var(--blue);border-left-color:var(--blue);
+        background:var(--wash-mint);}
+.blk.do > .lbl{color:var(--blue);}
+
+.blk.trap{border-top:1.4px solid var(--red);border-left:2.5px solid var(--red);
+          background:var(--wash-pink);}
+.blk.trap > .lbl{color:var(--red);}
+.blk.trap .lead{color:var(--red);}
+
+.blk.key{border-top:2.4px solid var(--ink);border-bottom-color:var(--pencil);
+         border-left:2.5px solid var(--ink);background:var(--wash-peach);}
+.blk.key > .lbl{color:var(--ink);}
+.blk.key > p{font-size:11.1pt;line-height:1.46;}
+
+/* ------------------------------------------------- code and figure art --- */
+
+code{
+  font-family:var(--mono);
+  color:var(--blue);
+  font-size:8.6pt;
+  background:var(--stock);
+  padding:.5px 3px;
+}
+pre{
+  font-family:var(--mono);
+  font-size:8.2pt;
+  line-height:1.44;
+  background:var(--stock);
+  border:none;
+  border-radius:0;
+  padding:10px 13px;
+  border-left:2.5px solid var(--blue);
+  margin:11px 0;
+  overflow:hidden;
+  white-space:pre;
+  break-inside:avoid;
+  page-break-inside:avoid;
+}
+pre code{background:none;padding:0;font-size:inherit;}
+
+/* Diagrams are figures, not code: rules top and bottom, bare paper between. */
+pre.diagram{
+  background:none;
+  border-top:1px solid var(--ink);
+  border-bottom:.5px solid var(--rule);
+  padding:11px 0 12px;
+  color:var(--ink-2);
+  font-size:8pt;
+  line-height:1.36;
+  text-align:center;
+}
+pre.diagram code{display:inline-block;text-align:left;}
+
+/* Figure inks. Applied by build.py to `text` fences only: box drawing recedes,
+   node labels advance, ticks and crosses carry the verdict, and an annotation
+   introduced by an arrow drops to pencil so it reads as marginal, not as part
+   of the machine. */
+pre.diagram .dr{color:var(--wire);}
+pre.diagram .da{color:var(--arrow);font-weight:700;}
+pre.diagram .df{color:var(--bar);}
+pre.diagram .dl{color:var(--ink);font-weight:700;}
+pre.diagram .dok{color:var(--blue);font-weight:700;}
+pre.diagram .dno{color:var(--red);font-weight:700;}
+pre.diagram .dc{color:var(--pencil);}
+
+.kw{color:var(--blue);font-weight:600;}
+.st{color:#415a77;}
+.cm{color:var(--pencil);font-style:italic;}
+.nu{color:var(--red);}
+
+/* A drawn figure is set like an ASCII one: flush, between rules, with the
+   caption in the reader's hand rather than the book's. */
+figure.drawn{
+  margin:15px 0 14px;
+  padding:11px 0 9px;
+  border-top:1px solid var(--ink);
+  border-bottom:.5px solid var(--rule);
+  break-inside:avoid;
+  page-break-inside:avoid;
+}
+figure.drawn svg{display:block;width:100%;height:auto;overflow:visible;}
+figure.drawn .cap{
+  font-family:var(--hand2);
+  font-size:9.6pt;
+  color:var(--pencil);
+  margin:8px 0 0;
+}
+
+/* --------------------------------------------------------------- tables --- */
+/* The head is a tinted band, the rows alternate, and the rules stay hairline.
+   A table is one of the densest things on a page, so it earns a field. */
+
+table{
+  border-collapse:collapse;
+  width:100%;
+  margin:13px 0;
+  font-size:8.9pt;
+  break-inside:auto;
+  page-break-inside:auto;
+}
+thead{display:table-header-group;}
+th{
+  font-family:var(--mono);
+  font-size:7pt;
+  font-weight:700;
+  letter-spacing:1.6px;
+  text-transform:uppercase;
+  text-align:left;
+  color:var(--blue);
+  background:var(--wash-cool);
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+  padding:5px 10px 4px;
+  border-bottom:1.4px solid var(--ink);
+  vertical-align:bottom;
+}
+td{
+  padding:5.5px 10px 5.5px 0;
+  border-bottom:.5px solid var(--rule);
+  vertical-align:top;
+}
+tr{break-inside:avoid;page-break-inside:avoid;}
+tbody tr:nth-child(even){
+  background:var(--wash-zebra);
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+tbody td{padding-left:10px;padding-right:10px;}
+table th:first-child,table td:first-child{padding-left:8px;}
+
+/* ------------------------------------------------ the reader's own space --- */
+
+.recall{
+  border-top:1.4px solid var(--blue);
+  border-left:2.5px solid var(--red);
+  background:var(--wash-peach);
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+  margin:20px 0 16px -13.5px;
+  padding:0 11px 0;
+  break-inside:avoid;
+  page-break-inside:avoid;
+}
+.recall .lbl{
+  font-family:var(--mono);
+  font-size:7.2pt;
+  font-weight:700;
+  letter-spacing:1.9px;
+  text-transform:uppercase;
+  line-height:1;
+  color:var(--blue);
+  display:inline-block;
+  margin:-4.4pt 0 7px;
+  padding-right:10px;
+  background:var(--paper);
+}
+.recall .prompt{
+  font-family:var(--hand2);
+  font-size:11.4pt;
+  line-height:1.3;
+  color:var(--ink);
+  margin:0 0 9px;
+}
+.recall .lines i{
+  display:block;
+  height:7.6mm;
+  border-bottom:.5px solid var(--grid);
+}
+
+/* A glossed term. Deliberately quieter than the five annotation blocks:
+   those are the argument, this is a footnote standing where the reader hit the
+   word, so it must be readable without competing for the eye. */
+.term{
+  border-top:.8px solid var(--rule);
+  border-bottom:.8px solid var(--rule);
+  background:var(--wash-zebra);
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+  margin:14px 0 15px;
+  padding:7px 11px 8px;
+  break-inside:avoid;
+  page-break-inside:avoid;
+}
+.term .w{
+  font-family:var(--mono);
+  font-size:6.9pt;
+  font-weight:700;
+  letter-spacing:1.8px;
+  text-transform:uppercase;
+  color:var(--blue);
+  display:block;
+  margin-bottom:4px;
+}
+.term p{margin:0 0 5px;font-size:.955em;color:var(--ink-2);}
+.term p:last-child{margin-bottom:0;}
+.term code{font-size:.9em;}
+
+/* The generated glossary. Two columns of one row each: the word hangs left so
+   the list can be scanned by eye without reading any definitions. */
+.glossary .gl-row{
+  display:grid;
+  grid-template-columns:32mm 1fr;
+  gap:0 9px;
+  padding:7px 0 8px;
+  border-bottom:.5px solid var(--rule);
+  break-inside:avoid;
+  page-break-inside:avoid;
+}
+.glossary .gl-row .w{
+  font-family:var(--mono);
+  font-size:7pt;
+  font-weight:700;
+  letter-spacing:1.3px;
+  color:var(--blue);
+  margin:2px 0 0;
+  line-height:1.35;
+}
+.glossary .gl-row .w a{color:inherit;text-decoration:none;}
+.glossary .gl-row .d p{margin:0 0 5px;font-size:.955em;}
+.glossary .gl-row .d p:last-child{margin-bottom:0;}
+
+/* Question bank. A reading book earns the peach wash on a recall rule
+   because it interrupts; here every block is a prompt, so the page has to
+   stay quiet and let the numbers do the work of telling them apart. */
+.quiz{
+  position:relative;
+  border-left:1.6px solid var(--rule);
+  margin:16px 0 14px -13.5px;
+  padding:0 0 0 11px;
+  break-inside:avoid;
+  page-break-inside:avoid;
+}
+.quiz .qn{
+  font-family:var(--mono);
+  font-size:6.9pt;
+  font-weight:700;
+  letter-spacing:1.5px;
+  color:var(--blue);
+}
+.quiz .qref{
+  font-family:var(--mono);
+  font-size:6.2pt;
+  letter-spacing:1.4px;
+  color:var(--pencil);
+  margin-left:9px;
+}
+.quiz .prompt{
+  font-family:var(--hand2);
+  font-size:11.4pt;
+  line-height:1.3;
+  color:var(--ink);
+  margin:3px 0 8px;
+}
+.quiz .lines i{
+  display:block;
+  height:7.4mm;
+  border-bottom:.5px solid var(--grid);
+}
+.redraw{
+  break-before:page;
+  page-break-before:always;
+  break-inside:avoid;
+  padding-top:2mm;
+}
+.redraw .lbl{
+  font-family:var(--mono);
+  font-size:7.4pt;
+  font-weight:700;
+  letter-spacing:2.2px;
+  text-transform:uppercase;
+  color:var(--blue);
+  display:block;
+  margin-bottom:4px;
+}
+.redraw .prompt{
+  font-family:var(--hand);
+  font-size:21pt;
+  line-height:1.2;
+  color:var(--ink);
+  margin:0;
+}
+.redraw .hint{
+  font-family:var(--hand2);
+  font-size:11pt;
+  color:var(--pencil);
+  margin:3px 0 10px;
+}
+/* Corner ticks instead of a frame, the way a plate is marked up for press. */
+.pad{
+  position:relative;
+  height:214mm;
+  background-image:radial-gradient(var(--grid) .55px,transparent .55px);
+  background-size:5mm 5mm;
+  background-position:2.5mm 2.5mm;
+}
+.pad i{position:absolute;width:7mm;height:7mm;}
+.pad .c1{top:0;left:0;border-top:1px solid var(--ink);border-left:1px solid var(--ink);}
+.pad .c2{top:0;right:0;border-top:1px solid var(--ink);border-right:1px solid var(--ink);}
+.pad .c3{bottom:0;left:0;border-bottom:1px solid var(--ink);border-left:1px solid var(--ink);}
+.pad .c4{bottom:0;right:0;border-bottom:1px solid var(--ink);border-right:1px solid var(--ink);}
+
+/* ------------------------------------------------ dividers and openers --- */
+
+/* The part divider is the one page that is allowed to be a field of colour
+   edge to edge. It is a breath between parts, so it should read as one. */
+.part{
+  break-before:page;
+  page-break-before:always;
+  break-after:page;
+  page-break-after:always;
+  padding:38mm 13px 0;
+  margin-left:-13.5px;
+  background:var(--wash-cool);
+  border-top:3px solid var(--blue);
+  min-height:236mm;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+.part .kicker{
+  font-family:var(--mono);
+  font-size:7.4pt;
+  font-weight:700;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  color:var(--pencil);
+  margin:0 0 4px;
+}
+.part .roman{
+  font-family:var(--hand);
+  font-size:82pt;
+  line-height:.86;
+  color:var(--blue);
+  margin:0;
+}
+.part h2{color:var(--ink-2);}
+.part-toc li .n{color:var(--red);}
+.part h2{
+  font-family:var(--hand);
+  font-size:27pt;
+  font-weight:600;
+  color:var(--ink);
+  border:none;
+  margin:10px 0 0;
+  padding:0;
+}
+.part .blurb{
+  font-size:11pt;
+  color:var(--ink-2);
+  max-width:112mm;
+  border-top:1.6px solid var(--ink);
+  margin-top:13px;
+  padding-top:11px;
+}
+.part-toc{margin-top:16mm;max-width:112mm;}
+.part-toc .h{
+  font-family:var(--mono);
+  font-size:7pt;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--pencil);
+  border-bottom:.5px solid var(--rule);
+  padding-bottom:4px;
+  margin-bottom:6px;
+}
+.part-toc ol{list-style:none;margin:0;padding:0;}
+.part-toc li{display:flex;align-items:baseline;gap:9px;font-size:9.6pt;margin:3px 0;}
+.part-toc li .n{font-family:var(--mono);font-size:8pt;color:var(--blue);min-width:15px;}
+
+.titlepage{
+  break-after:page;
+  page-break-after:always;
+  padding-top:30mm;
+}
+.titlepage .eyebrow{
+  font-family:var(--mono);
+  font-size:7.6pt;
+  font-weight:700;
+  letter-spacing:4.4px;
+  text-transform:uppercase;
+  color:var(--pencil);
+  margin:0 0 10px;
+}
+.titlepage .top-rule{border-top:2.6px solid var(--ink);margin-bottom:11px;}
+.titlepage .sub{
+  font-family:var(--serif);
+  font-size:12.4pt;
+  line-height:1.4;
+  color:var(--ink-2);
+  max-width:104mm;
+  margin:11px 0 0;
+}
+.titlepage .plate{margin-top:14mm;}
+.titlepage .plate .cap{
+  font-family:var(--hand2);
+  font-size:11pt;
+  color:var(--pencil);
+  margin:0 0 5px;
+}
+.titlepage .plate .pad{height:76mm;}
+.titlepage .meta{
+  margin-top:12mm;
+  padding-top:9px;
+  border-top:.5px solid var(--rule);
+  font-family:var(--mono);
+  font-size:7.4pt;
+  letter-spacing:1.2px;
+  color:var(--pencil);
+}
+
+/* ------------------------------------------------------------- contents --- */
+
+.toc{break-before:page;page-break-before:always;break-after:page;page-break-after:always;}
+.toc .head{display:flex;align-items:center;gap:11px;margin-bottom:10px;}
+.toc .head h2{
+  font-family:var(--hand);
+  font-size:24pt;
+  font-weight:600;
+  color:var(--ink);
+  margin:0;
+}
+.toc .head .r{flex:1;border-top:1.6px solid var(--ink);}
+.toc .part-row{
+  font-family:var(--mono);
+  font-size:6.9pt;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--blue);
+  margin:8px 0 2px;
+  border-bottom:.5px solid var(--rule);
+  padding-bottom:2px;
+}
+.toc .part-row a{color:var(--blue);border:none;}
+.toc ol{list-style:none;padding:0;margin:0;}
+.toc li{display:flex;align-items:baseline;gap:7px;font-size:9.1pt;margin:0;line-height:1.42;}
+.toc li a{color:var(--ink);border:none;}
+.toc li .n{font-family:var(--mono);font-size:7.8pt;color:var(--blue);min-width:15px;}
+.toc li .n:empty{min-width:0;}
+.toc li .dots{flex:1;border-bottom:.5px dotted var(--grid);transform:translateY(-2px);}
+
+/* ------------------------------------------------------- the notes rail --- */
+
+.rail{
+  position:fixed;
+  top:0;right:0;bottom:0;
+  width:var(--rail-w);
+  border-left:.6px solid var(--rule);
+  padding:4mm 4mm 4mm 6mm;
+}
+.rail .rail-title{
+  font-family:var(--hand2);
+  font-size:10.5pt;
+  color:var(--pencil);
+  margin:0;
+}
+.rail .dots{
+  position:absolute;
+  top:12mm;left:6mm;right:4mm;bottom:4mm;
+  background-image:radial-gradient(var(--grid) .55px,transparent .55px);
+  background-size:5mm 5mm;
+}
+
+/* ------------------------------------------------------ landscape sizes --- */
+/* Landscape gives ~175mm of column height against portrait's ~262mm. */
+
+.layout-tablet .titlepage{padding-top:14mm;}
+.layout-tablet .titlepage h1{font-size:32pt;}
+.layout-tablet .titlepage .plate .pad{height:56mm;}
+.layout-tablet .titlepage .meta{margin-top:8mm;}
+.layout-tablet .part{padding-top:26mm;}
+.layout-tablet .part .roman{font-size:62pt;}
+.layout-tablet .part-toc{margin-top:9mm;}
+.layout-tablet .part{min-height:118mm;padding-top:20mm;}
+.layout-tablet .redraw .pad{height:143mm;}
+.layout-tablet .redraw .prompt{font-size:19pt;}
+
+/* A block too tall for one column has to be allowed to fragment, and Chrome
+   cannot slice an inline-block. Over-tall figures therefore give up centring
+   so their lines can break across pages instead of being pushed whole and
+   leaving the page behind them empty. */
+pre.tall{text-align:left;}
+pre.tall code{display:block;}
