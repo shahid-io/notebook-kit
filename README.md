@@ -1,5 +1,8 @@
 # Study Notebooks
 
+MIT licensed. The two bundled fonts are not covered by it; both are SIL
+OFL 1.1 and free to redistribute. See `engine/fonts/NOTICE.md`.
+
 Printed study manuals, built from markdown into annotatable PDFs. One pipeline,
 one design, many books. A notebook is built around a single question, because
 one question worked properly teaches more than a survey does.
